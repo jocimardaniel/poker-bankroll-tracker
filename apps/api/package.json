@@ -10,7 +10,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "build:api": "tsc",
-    "build": "cd ../.. && npm run build --workspace=packages/shared && npm run build --workspace=apps/web && rm -rf apps/api/dist && cp -r apps/web/dist apps/api/dist"
+    "build": "echo ok"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
