@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  passwordHash      String
+  name              String
+  preferredCurrency String          @default("BRL")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  wallets           Wallet[]
+  sessions          Session[]
+  playerProfiles    PlayerProfile[]
+  transactions      WalletTransaction[]
+
+  @@map("users")
+}
+
+model Wallet {
+  id          String              @id @default(uuid())
+  userId      String              @map("user_id")
+  name        String
+  currency    String              @default("BRL")
+  balance     Float               @default(0.0)
+  isArchived  Boolean             @default(false) @map("is_archived")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id              String                @id @default(uuid())
+  walletId        String                @map("wallet_id")
+  userId          String                @map("user_id")
+  sessionId       String?               @map("session_id")
+  type            String                // DEPOSIT, WITHDRAWAL, TRANSFER_IN, etc.
+  amount          Float
+  description     String?
+  createdAt       DateTime              @default(now()) @map("created_at")
+
+  wallet          Wallet                @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session         Session?              @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("wallet_transactions")
+}
+
+model Session {
+  id                String              @id @default(uuid())
+  userId            String              @map("user_id")
+  walletId          String              @map("wallet_id")
+  sessionType       String              @map("session_type") // CASH_GAME, TOURNAMENT
+  gameVariant       String              @default("NLH") @map("game_variant")
+  locationType      String              @map("location_type") // LIVE, ONLINE
+  locationName      String              @map("location_name")
+  startTime         DateTime            @map("start_time")
+  endTime           DateTime?           @map("end_time")
+  durationMinutes   Int                 @default(0) @map("duration_minutes")
+  netProfit         Float               @default(0.0) @map("net_profit")
+  status            String              @default("COMPLETED")
+  notes             String?
+  clientSyncId      String?             @unique @map("client_sync_id")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet            Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  cashGameDetails   CashGameDetails?
+  tournamentDetails TournamentDetails?
+  transactions      WalletTransaction[]
+
+  @@map("sessions")
+}
+
+model CashGameDetails {
+  id              String      @id @default(uuid())
+  sessionId       String      @unique @map("session_id")
+  smallBlind      Float       @map("small_blind")
+  bigBlind        Float       @map("big_blind")
+  initialBuyin    Float       @map("initial_buyin")
+  totalRebuys     Float       @default(0.0) @map("total_rebuys")
+  cashoutAmount   Float       @default(0.0) @map("cashout_amount")
+  tipsAndExpenses Float       @default(0.0) @map("tips_and_expenses")
+  tableSize       String      @default("SIX_MAX") @map("table_size")
+  handsPlayed     Int?        @map("hands_played")
+
+  session         Session     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("cash_game_details")
+}
+
+model TournamentDetails {
+  id               String            @id @default(uuid())
+  sessionId        String            @unique @map("session_id")
+  buyinFee         Float             @map("buyin_fee")
+  entryFee         Float             @default(0.0) @map("entry_fee")
+  reentriesCount   Int               @default(0) @map("reentries_count")
+  reentriesCost    Float             @default(0.0) @map("reentries_cost")
+  addonsAmount     Float             @default(0.0) @map("addons_amount")
+  bountyCollected  Float             @default(0.0) @map("bounty_collected")
+  prizeWon         Float             @default(0.0) @map("prize_won")
+  totalEntries     Int?              @map("total_entries")
+  finalPosition    Int?              @map("final_position")
+  isItm            Boolean           @default(false) @map("is_itm")
+  tournamentFormat String            @default("FREEZEOUT") @map("tournament_format")
+
+  session          Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("tournament_details")
+}
+
+model PlayerProfile {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  playerName  String      @map("player_name")
+  tag         String
+  colorHex    String      @default("#3B82F6") @map("color_hex")
+  notes       String?
+  clientSyncId String?    @unique @map("client_sync_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("player_profiles")
+}
