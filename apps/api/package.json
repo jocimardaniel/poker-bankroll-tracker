@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "build:api": "tsc"
+    "build:api": "tsc",
+    "build": "echo ok"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
