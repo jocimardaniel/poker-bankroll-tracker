@@ -9,8 +9,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "vercel-build": "echo ok"
+    "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",

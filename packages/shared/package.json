@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "vercel-build": "tsc"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "^3.23.8"
