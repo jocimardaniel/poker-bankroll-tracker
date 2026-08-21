@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm exec -- vite build",
+    "build": "node --input-type=module -e \"import { build } from 'vite'; build();\"",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
