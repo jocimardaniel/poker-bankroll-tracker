@@ -1,14 +1,14 @@
+import { build } from "vite";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { build } from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-process.chdir(__dirname);
+process.chdir(path.resolve(__dirname, "apps/web"));
 
 await build({
-  configFile: path.resolve(__dirname, "vite.config.ts"),
+  configFile: path.resolve(__dirname, "apps/web/vite.config.ts"),
   build: {
-    outDir: path.resolve(__dirname, "../../dist"),
+    outDir: path.resolve(__dirname, "dist"),
     emptyOutDir: true,
   }
 });
