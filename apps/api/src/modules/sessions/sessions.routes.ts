@@ -6,7 +6,7 @@ import {
 } from "@poker-tracker/shared";
 import { prisma } from "../../shared/database.js";
 import { authenticate } from "../../shared/auth.js";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook("preHandler", authenticate);
@@ -117,18 +117,18 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
           startTime: new Date(data.startTime),
           endTime: data.endTime ? new Date(data.endTime) : null,
           durationMinutes: data.durationMinutes,
-          netProfit: new Prisma.Decimal(calculatedProfit),
+          netProfit: calculatedProfit,
           status: data.status,
           notes: data.notes,
           cashGameDetails: data.cashGameDetails
             ? {
                 create: {
-                  smallBlind: new Prisma.Decimal(data.cashGameDetails.smallBlind),
-                  bigBlind: new Prisma.Decimal(data.cashGameDetails.bigBlind),
-                  initialBuyin: new Prisma.Decimal(data.cashGameDetails.initialBuyin),
-                  totalRebuys: new Prisma.Decimal(data.cashGameDetails.totalRebuys),
-                  cashoutAmount: new Prisma.Decimal(data.cashGameDetails.cashoutAmount),
-                  tipsAndExpenses: new Prisma.Decimal(data.cashGameDetails.tipsAndExpenses),
+                  smallBlind: data.cashGameDetails.smallBlind,
+                  bigBlind: data.cashGameDetails.bigBlind,
+                  initialBuyin: data.cashGameDetails.initialBuyin,
+                  totalRebuys: data.cashGameDetails.totalRebuys,
+                  cashoutAmount: data.cashGameDetails.cashoutAmount,
+                  tipsAndExpenses: data.cashGameDetails.tipsAndExpenses,
                   tableSize: data.cashGameDetails.tableSize,
                   handsPlayed: data.cashGameDetails.handsPlayed
                 }
@@ -137,13 +137,13 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
           tournamentDetails: data.tournamentDetails
             ? {
                 create: {
-                  buyinFee: new Prisma.Decimal(data.tournamentDetails.buyinFee),
-                  entryFee: new Prisma.Decimal(data.tournamentDetails.entryFee),
+                  buyinFee: data.tournamentDetails.buyinFee,
+                  entryFee: data.tournamentDetails.entryFee,
                   reentriesCount: data.tournamentDetails.reentriesCount,
-                  reentriesCost: new Prisma.Decimal(data.tournamentDetails.reentriesCost),
-                  addonsAmount: new Prisma.Decimal(data.tournamentDetails.addonsAmount),
-                  bountyCollected: new Prisma.Decimal(data.tournamentDetails.bountyCollected),
-                  prizeWon: new Prisma.Decimal(data.tournamentDetails.prizeWon),
+                  reentriesCost: data.tournamentDetails.reentriesCost,
+                  addonsAmount: data.tournamentDetails.addonsAmount,
+                  bountyCollected: data.tournamentDetails.bountyCollected,
+                  prizeWon: data.tournamentDetails.prizeWon,
                   totalEntries: data.tournamentDetails.totalEntries,
                   finalPosition: data.tournamentDetails.finalPosition,
                   isItm: data.tournamentDetails.isItm,
@@ -163,7 +163,7 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
         await tx.wallet.update({
           where: { id: wallet.id },
           data: {
-            balance: new Prisma.Decimal(Number(wallet.balance) + calculatedProfit)
+            balance: Number(wallet.balance) + calculatedProfit
           }
         });
       }
@@ -208,7 +208,7 @@ export const sessionRoutes: FastifyPluginAsync = async (fastify) => {
       data: {
         endTime: data.endTime ? new Date(data.endTime) : undefined,
         durationMinutes: data.durationMinutes,
-        netProfit: new Prisma.Decimal(calculatedProfit),
+        netProfit: calculatedProfit,
         status: data.status,
         notes: data.notes
       },

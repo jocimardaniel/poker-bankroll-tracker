@@ -2,7 +2,6 @@ import type { FastifyPluginAsync } from "fastify";
 import { WalletSchema, WalletTransactionSchema, WalletTransferSchema } from "@poker-tracker/shared";
 import { prisma } from "../../shared/database.js";
 import { authenticate } from "../../shared/auth.js";
-import { Prisma } from "@prisma/client";
 
 export const walletRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook("preHandler", authenticate);
@@ -31,7 +30,7 @@ export const walletRoutes: FastifyPluginAsync = async (fastify) => {
         userId: request.user.userId,
         name: data.name,
         currency: data.currency,
-        balance: new Prisma.Decimal(data.balance)
+        balance: data.balance
       }
     });
 
@@ -41,7 +40,7 @@ export const walletRoutes: FastifyPluginAsync = async (fastify) => {
           walletId: wallet.id,
           userId: request.user.userId,
           type: "DEPOSIT",
-          amount: new Prisma.Decimal(data.balance),
+          amount: data.balance,
           description: "Saldo inicial da carteira"
         }
       });
@@ -77,14 +76,14 @@ export const walletRoutes: FastifyPluginAsync = async (fastify) => {
     const [updatedWallet, transaction] = await prisma.$transaction([
       prisma.wallet.update({
         where: { id: wallet.id },
-        data: { balance: new Prisma.Decimal(newBalance) }
+        data: { balance: newBalance }
       }),
       prisma.walletTransaction.create({
         data: {
           walletId: wallet.id,
           userId: request.user.userId,
           type: data.type,
-          amount: new Prisma.Decimal(amount),
+          amount: amount,
           description: data.description
         }
       })
@@ -111,18 +110,18 @@ export const walletRoutes: FastifyPluginAsync = async (fastify) => {
     const [updatedFrom, updatedTo] = await prisma.$transaction([
       prisma.wallet.update({
         where: { id: fromWallet.id },
-        data: { balance: new Prisma.Decimal(Number(fromWallet.balance) - amount) }
+        data: { balance: Number(fromWallet.balance) - amount }
       }),
       prisma.wallet.update({
         where: { id: toWallet.id },
-        data: { balance: new Prisma.Decimal(Number(toWallet.balance) + amount) }
+        data: { balance: Number(toWallet.balance) + amount }
       }),
       prisma.walletTransaction.create({
         data: {
           walletId: fromWallet.id,
           userId: request.user.userId,
           type: "TRANSFER_OUT",
-          amount: new Prisma.Decimal(amount),
+          amount: amount,
           description: data.description || `Transferência para ${toWallet.name}`
         }
       }),
@@ -131,7 +130,7 @@ export const walletRoutes: FastifyPluginAsync = async (fastify) => {
           walletId: toWallet.id,
           userId: request.user.userId,
           type: "TRANSFER_IN",
-          amount: new Prisma.Decimal(amount),
+          amount: amount,
           description: data.description || `Transferência de ${fromWallet.name}`
         }
       })
