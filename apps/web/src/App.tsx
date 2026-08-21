@@ -155,36 +155,53 @@ export function App() {
     };
   }, []);
 
-  // Initialize Dexie.js database
+  // Load data for current user (either authenticated user or demo)
   useEffect(() => {
-    async function initDB() {
-      const storedWallets = await db.wallets.toArray();
-      if (storedWallets.length === 0) {
-        await db.wallets.bulkAdd(defaultWallets);
-        await db.sessions.bulkAdd(defaultSessions);
-        await db.players.bulkAdd(defaultPlayers);
-        setWallets(defaultWallets);
-        setSessions(defaultSessions);
-        setPlayers(defaultPlayers);
-      } else {
-        const [wList, sList, pList] = await Promise.all([
-          db.wallets.toArray(),
-          db.sessions.toArray(),
-          db.players.toArray()
-        ]);
-        setWallets(wList);
-        setSessions(sList);
-        setPlayers(pList);
+    async function loadData() {
+      if (user) {
+        // Usuário logado: busca dados sincronizados da nuvem e do Dexie
+        const syncData = await syncEngine.sync();
+        let userWallets = await db.wallets.where("userId").equals(user.id).toArray();
+        let userSessions = await db.sessions.where("userId").equals(user.id).toArray();
+        let userPlayers = await db.players.where("userId").equals(user.id).toArray();
 
-        const inProgress = sList.find((s) => s.status === "IN_PROGRESS");
-        if (inProgress) {
-          setActiveSession(inProgress);
+        // Se veio dados novos do sync, atualiza o estado
+        if (syncData.wallets.length > 0) userWallets = syncData.wallets;
+        if (syncData.sessions.length > 0) userSessions = syncData.sessions;
+
+        setWallets(userWallets);
+        setSessions(userSessions);
+        setPlayers(userPlayers);
+
+        const inProgress = userSessions.find((s) => s.status === "IN_PROGRESS");
+        setActiveSession(inProgress || null);
+      } else {
+        // Usuário não logado / Modo Demo
+        const storedWallets = await db.wallets.where("userId").equals("user-default").toArray();
+        if (storedWallets.length === 0) {
+          await db.wallets.bulkAdd(defaultWallets);
+          await db.sessions.bulkAdd(defaultSessions);
+          await db.players.bulkAdd(defaultPlayers);
+          setWallets(defaultWallets);
+          setSessions(defaultSessions);
+          setPlayers(defaultPlayers);
+        } else {
+          const [wList, sList, pList] = await Promise.all([
+            db.wallets.where("userId").equals("user-default").toArray(),
+            db.sessions.where("userId").equals("user-default").toArray(),
+            db.players.where("userId").equals("user-default").toArray()
+          ]);
+          setWallets(wList);
+          setSessions(sList);
+          setPlayers(pList);
+          const inProgress = sList.find((s) => s.status === "IN_PROGRESS");
+          setActiveSession(inProgress || null);
         }
       }
     }
 
-    initDB();
-  }, []);
+    loadData();
+  }, [user]);
 
   // Handlers para Wallets
   const handleAddWallet = async (name: string, currency: any, initialBalance: number) => {

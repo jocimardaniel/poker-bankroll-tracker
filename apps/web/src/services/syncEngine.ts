@@ -17,52 +17,60 @@ class SyncEngine {
     }
   }
 
-  public async sync(): Promise<void> {
-    if (this.isSyncing || !navigator.onLine) return;
+  public async sync(): Promise<{ wallets: any[]; sessions: any[] }> {
+    if (this.isSyncing) return { wallets: [], sessions: [] };
     const token = localStorage.getItem("poker_tracker_token");
-    if (!token) return;
+    if (!token) return { wallets: [], sessions: [] };
 
     this.isSyncing = true;
     try {
       // 1. Puxa dados remotos da nuvem (Wallets e Sessões)
-      await this.pullRemoteData();
+      const data = await this.pullRemoteData();
 
       // 2. Envia dados locais pendentes para a nuvem
       await this.pushPendingData();
       console.log("✅ Sincronização em nuvem concluída com sucesso!");
+      return data;
     } catch (err) {
       console.warn("⚠️ Aviso na sincronização com a nuvem:", err);
+      return { wallets: [], sessions: [] };
     } finally {
       this.isSyncing = false;
     }
   }
 
-  public async pullRemoteData(): Promise<void> {
+  public async pullRemoteData(): Promise<{ wallets: any[]; sessions: any[] }> {
     try {
       const [walletsRes, sessionsRes] = await Promise.all([
         api.wallets.list().catch(() => ({ wallets: [] })),
         api.sessions.list().catch(() => ({ sessions: [] }))
       ]);
 
-      if (walletsRes.wallets && walletsRes.wallets.length > 0) {
+      const wallets = walletsRes.wallets || [];
+      const sessions = sessionsRes.sessions || [];
+
+      if (wallets.length > 0) {
         await db.wallets.bulkPut(
-          walletsRes.wallets.map((w: any) => ({
+          wallets.map((w: any) => ({
             ...w,
             syncStatus: "SYNCED"
           }))
         );
       }
 
-      if (sessionsRes.sessions && sessionsRes.sessions.length > 0) {
+      if (sessions.length > 0) {
         await db.sessions.bulkPut(
-          sessionsRes.sessions.map((s: any) => ({
+          sessions.map((s: any) => ({
             ...s,
             syncStatus: "SYNCED"
           }))
         );
       }
+
+      return { wallets, sessions };
     } catch (e) {
       console.warn("Falha ao puxar dados remotos:", e);
+      return { wallets: [], sessions: [] };
     }
   }
 

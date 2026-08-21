@@ -1,0 +1,28 @@
+Me ajude a criar um projeto usando playwright e bdd, um projeto bem estruturado com page objects.
+Nosso teste no primeiro momento vai ser simples navegar até a pagina www.google.com, pesquisar por Playwright e bdd e validar que a pesquisa retornou o resultado esperado.
+
+
+https://github.com/jocimardaniel/playwright-bdd-google
+
+
+
+git branch -m main
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/jocimardaniel/playwright-bdd-google.git
+git push -u origin main
+
+poker bankroll tracker
+
+
+Supabase
+poker-bankroll-tracker-app
+18yYy79g85IEzbra
+
+
+postgresql://postgres:18yYy79g85IEzbra@db.wjgtbcgrrpchdxcccmro.supabase.co:5432/postgres
+
+Usuarios:
+Jocimar Daniel Test senha: test123456
+
+E-mail: jogador@poker.com | Senha: poker123
