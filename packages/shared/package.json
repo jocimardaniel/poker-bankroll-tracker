@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "../../node_modules/.bin/tsc || tsc",
+    "build": "node ../../node_modules/typescript/bin/tsc || tsc",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
