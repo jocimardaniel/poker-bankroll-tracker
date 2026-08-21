@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
-    "build": "node node_modules/typescript/bin/tsc -p packages/shared/tsconfig.json && node build.js && rm -rf apps/api/dist && cp -r dist apps/api/dist",
+    "build": "npx prisma generate --schema=apps/api/prisma/schema.prisma && node node_modules/typescript/bin/tsc -p packages/shared/tsconfig.json && node build.js && rm -rf apps/api/dist && cp -r dist apps/api/dist",
     "test": "npm run test --workspace=packages/shared",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build:api": "npm run build:api --workspace=apps/api"
@@ -20,7 +20,8 @@
     "@types/react-dom": "^19.0.3",
     "vite": "^6.1.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "vite-plugin-pwa": "^0.21.1"
+    "vite-plugin-pwa": "^0.21.1",
+    "@vercel/node": "^5.1.8"
   },
   "type": "module"
 }

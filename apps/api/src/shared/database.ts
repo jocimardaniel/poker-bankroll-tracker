@@ -1,22 +1,17 @@
 import { PrismaClient } from "@prisma/client";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const dbPath = path.resolve(__dirname, "../../prisma/dev.db");
-
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = `file:${dbPath}`;
+// Global cache for PrismaClient across serverless function invocations
+declare global {
+  // eslint-disable-next-line no-var
+  var prismaGlobal: PrismaClient | undefined;
 }
 
-export const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL.startsWith("file:")
-        ? `file:${dbPath}`
-        : process.env.DATABASE_URL
-    }
-  },
-  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
-});
+export const prisma =
+  globalThis.prismaGlobal ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.prismaGlobal = prisma;
+}
